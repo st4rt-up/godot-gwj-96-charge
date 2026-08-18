@@ -1,5 +1,5 @@
 extends CharacterBody2D
-
+class_name RobotCharacter
 
 const ACCEL := 20.0
 const MAX_SPEED := 200
@@ -12,9 +12,16 @@ const JUMP_VELOCITY = 400.0 # negative is up
 @export var character_graphics: Node2D
 @export var tile_layer: TileMapLayer
 @export var splatter_layer: TileMapLayer
+@export var pickup_box: Area2D
 var DEBUG : bool = true;
 
-var left_arm
+
+signal charge_changed(new_charge: int)
+var charge: int = 100
+
+var left_arm: Part
+var right_arm: Part
+var legs: Part
 
 # placeholder input code
 var held_action1_ticks: int = 0
@@ -27,11 +34,20 @@ func get_movement_direction() -> Vector2:
 	return dir.normalized()
 
 func get_aim_direction() -> Vector2:
-	var char_to_mouse: Vector2 = get_global_mouse_position()-position
+	var char_to_mouse: Vector2 = get_global_mouse_position()-global_position
 	return char_to_mouse.normalized();
+	
 	
 func get_aim_angle() -> float:
 	return get_angle_to(get_global_mouse_position())
+	
+func fire_raycast_to_aim_dir(length: int) -> Dictionary:
+	var space_state = get_world_2d().direct_space_state
+	var raycast_from := position
+	var raycast_to := get_aim_direction() * length
+	
+	var query = PhysicsRayQueryParameters2D.create(raycast_from, raycast_to)
+	return space_state.intersect_ray(query)
 	
 func handle_movement(delta: float) -> void:
 	var direction := get_movement_direction()
@@ -86,6 +102,13 @@ func handle_movement(delta: float) -> void:
 		
 		# goo slide down	
 		accel_vec.y += get_gravity().y * 0.2 * delta
+		
+		var wall_direction: int = int(sign(get_wall_normal().dot(Vector2.LEFT)))
+		accel_vec.x += wall_direction * ACCEL * 0.1
+		
+		if wall_direction * direction.x > 0 && velocity.y > 0:
+			accel_vec.y -= velocity.y * 0.10
+		
 			
 	if apply_gravity:
 		accel_vec.y += get_gravity().y * delta
@@ -99,13 +122,24 @@ func placeholder_graphics() -> void:
 	# graphics placeholder
 	if is_on_floor():
 		# PLACEHOLDER
-		character_graphics.rotation += velocity.x * 0.1 / (2 * 3.1415 * 10.0)
+		character_graphics.sprite.rotation += velocity.x * 0.1 / (2 * 3.1415 * 10.0)
+		#character_graphics.scale = Vector2.ONE
+		#character_graphics.skew = 0
 	else:
-		character_graphics.rotation += velocity.x * 0.01 / (2 * 3.1415 * 10.0)
+		character_graphics.sprite.rotation += velocity.x * 0.01 / (2 * 3.1415 * 10.0)
+		
+		#if velocity.y > 0:
+			#var new_scale := (Vector2.DOWN * velocity.y * 0.006)
+			#new_scale.x = 1.0
+			#new_scale.y = clamp(new_scale.y, 1.0, 2.0)
+			
+			#character_graphics.scale = new_scale
+		
 
 	if is_on_wall():
 		var wall_right_side := int(sign(get_wall_normal().dot(Vector2.RIGHT)))
 		character_graphics.rotation += wall_right_side * velocity.y * 0.1 / (2 * 3.1415 * 10.0)
+		
 
 func draw_debug_input_display() -> void:
 	# === aim direction display
@@ -154,14 +188,12 @@ func _draw() -> void:
 	if DEBUG:
 		draw_debug_input_display()
 		
-		
 func _process(_float) -> void:
 	queue_redraw()
 	
 func _physics_process(delta: float) -> void:
 	handle_movement(delta)
 	placeholder_graphics()
-
 	
 	if Input.is_action_pressed("action_4"):
 		held_space_ticks += 1
@@ -179,25 +211,71 @@ func _physics_process(delta: float) -> void:
 		# lightAction() // midAction() // heavyAction()
 		# called here
 		
-		# if held_action1_ticks > 0 && held_action1_ticks < 20:
+		if held_action1_ticks > 0 && held_action1_ticks < 20:
+			if left_arm:
+				left_arm.action_light()
 			
-		if held_action1_ticks >= 20 && held_action1_ticks < 40 && splatter_aim_cone:
-			splatter_aim_cone.rotation = get_aim_angle()
-			splatter_aim_cone.monitoring = true
-			splatter_aim_cone.visible = true
-			# splatter_layer.update_internals()
-		held_action1_ticks = 0
+			#var result = fire_raycast_to_aim_dir(500)
+#
+			#if !result.is_empty():
+				#var collider = result.get("collider")
+				#print("hit a %s" % collider.name)
+				#if collider is RigidBody2D:
+					#collider.apply_impulse(get_aim_direction() * 250)
+		
+		elif held_action1_ticks >= 20 && held_action1_ticks < 40 && splatter_aim_cone:
+			if left_arm:
+				left_arm.action_medium()
+			#if use_charge_if_possible(30):
+				#var result = fire_raycast_to_aim_dir(500)
+#
+				#if !result.is_empty():
+					#var collider = result.get("collider")
+					#print("hit a %s" % collider.name)
+					#if collider is RigidBody2D:
+						#collider.apply_impulse(get_aim_direction() * 500)
+				#apply_splatter_placeholder()
 	else:
 		held_action1_ticks = 0 
 		splatter_aim_cone.monitoring = false
 		splatter_aim_cone.visible = false
 		
+	if Input.is_action_just_pressed("action_2"):
+		var parts = scan_for_nearby_parts()
+		if !parts.is_empty():
+			left_arm = parts[0]
+			left_arm.character = self
 
+func use_charge_if_possible(cost: int) -> bool:
+	if cost > charge: return false
+	else:
+		charge -= cost
+		charge_changed.emit(charge)
+		return true
+
+func apply_splatter_placeholder() -> void:
+	splatter_aim_cone.rotation = get_aim_angle()
+	splatter_aim_cone.monitoring = true
+	splatter_aim_cone.visible = true
+
+func scan_for_nearby_parts() -> Array[Part]:
+	var result: Array[Part] = []
+	if !pickup_box.has_overlapping_areas(): return result
 	
+	for pickup in pickup_box.get_overlapping_areas():
+		var candidate = pickup.get_parent()
+		if candidate != null && candidate is Part:
+			print(candidate.name)
+			result.insert(0, candidate)
+	return result
 
 func _ready():
 	# placeholder
 	splatter_aim_cone.body_shape_entered.connect(area_entered)
+	charge_changed.emit(charge)
+
+	# splatter_aim_cone.monitoring = false
+	# splatter_aim_cone.visible = false
 	
 func area_entered(body_rid: RID, body: Node2D, _body_shape_index: int, _local_shape_index: int):
 	if body.has_method("get_coords_for_body_rid"): 

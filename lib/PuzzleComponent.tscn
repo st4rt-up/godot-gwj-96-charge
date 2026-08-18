@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://dcxba8ednju2i"]
-
-[ext_resource type="Script" uid="uid://d24u6y5bynjeb" path="res://lib/PuzzleComponent.gd" id="1_edwlk"]
-
-[node name="PuzzleComponent" type="Node" unique_id=1904851723]
-script = ExtResource("1_edwlk")

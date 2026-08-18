@@ -1,3 +1,4 @@
+@tool
 extends Node2D
 class_name PuzzleComponent
 
@@ -67,7 +68,10 @@ func is_deactivated() -> bool:
 	return state == PuzzleObjectState.FullyDeactivated
 
 func reset() -> void:
+	var prev_state = state
 	state = PuzzleObjectState.FullyDeactivated
+	if prev_state != state:
+		switched_states.emit()
 	progress = 0.0
 
 func _ready() -> void:
@@ -84,7 +88,6 @@ func check_activators() -> bool:
 	if state == PuzzleObjectState.ForcedDeactivated:
 		return false
 	elif state == PuzzleObjectState.ForcedActivated:
-		print("this is running")
 		return true
 	
 	if !is_activated_by.is_empty():
@@ -97,12 +100,11 @@ func check_activators() -> bool:
 	
 	return false	
 			
-
 func _physics_process(_delta: float) -> void:
 	if check_activators():
 		activate()
 	else:
-		print("%s" % check_activators())
+		# print("%s" % check_activators())
 		deactivate()
 	
 	match state:
@@ -119,4 +121,12 @@ func _physics_process(_delta: float) -> void:
 			else:
 				progress -= speed
 			
-		
+func _draw() -> void:
+	if !is_activated_by.is_empty():
+		for activator in is_activated_by:
+			if activator == null: continue
+			var line_colour = Color.YELLOW if activator.is_activated() else Color.WHITE
+			draw_line(Vector2.ZERO, activator.global_position-self.global_position, line_colour)
+					
+func _process(_delta: float) -> void:
+	queue_redraw()
