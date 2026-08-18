@@ -14,5 +14,5 @@ func _physics_process(delta: float) -> void:
 	global_position = global_position.lerp(target.global_position, 1.0 - pow(smoothing, delta))
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	pass

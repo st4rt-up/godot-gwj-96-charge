@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://ceju24awvswnv"]
+
+[ext_resource type="Script" uid="uid://cs8rbmukhkfh3" path="res://game_components/hold_button.gd" id="1_uwqvg"]
+[ext_resource type="PackedScene" uid="uid://dcxba8ednju2i" path="res://lib/PuzzleComponent.tscn" id="2_40irj"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_muixn"]
+size = Vector2(16, 16)
+
+[node name="hold_button" type="Node2D" unique_id=1308775342 node_paths=PackedStringArray("handler", "collision_box", "DEBUG_LABEL")]
+visible = false
+script = ExtResource("1_uwqvg")
+handler = NodePath("PuzzleComponent")
+collision_box = NodePath("button_hitbox")
+DEBUG_LABEL = NodePath("debug_label")
+
+[node name="PuzzleComponent" parent="." unique_id=1904851723 instance=ExtResource("2_40irj")]
+speed = 100.0
+
+[node name="button_hitbox" type="Area2D" parent="." unique_id=1401016788]
+collision_layer = 0
+metadata/_edit_lock_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="button_hitbox" unique_id=1463865485]
+shape = SubResource("RectangleShape2D_muixn")
+metadata/_edit_lock_ = true
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=11594701]
+metadata/_edit_lock_ = true
+
+[node name="debug_label" type="Label" parent="." unique_id=1224153491]
+offset_left = -19.0
+offset_top = -17.0
+offset_right = 21.0
+offset_bottom = 6.0
+text = "false"
+metadata/_edit_lock_ = true

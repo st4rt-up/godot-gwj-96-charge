@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://nebq3xuprv8q"]
+
+[ext_resource type="Script" uid="uid://qneov68d8qgx" path="res://game_components/press_button.gd" id="1_es58v"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_muixn"]
+size = Vector2(16, 16)
+
+[node name="press_button" type="Node2D" unique_id=1308775342 node_paths=PackedStringArray("collision_box", "DEBUG_LABEL")]
+script = ExtResource("1_es58v")
+collision_box = NodePath("button_hitbox")
+DEBUG_LABEL = NodePath("debug_label")
+
+[node name="button_hitbox" type="Area2D" parent="." unique_id=1401016788]
+collision_layer = 0
+metadata/_edit_lock_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="button_hitbox" unique_id=1463865485]
+shape = SubResource("RectangleShape2D_muixn")
+metadata/_edit_lock_ = true
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=11594701]
+metadata/_edit_lock_ = true
+
+[node name="debug_label" type="Label" parent="." unique_id=1224153491]
+offset_left = -19.0
+offset_top = -17.0
+offset_right = 21.0
+offset_bottom = 6.0
+text = "false"
+metadata/_edit_lock_ = true

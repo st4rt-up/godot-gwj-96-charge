@@ -1,15 +1,22 @@
 extends CharacterBody2D
 
 
+const ACCEL := 20.0
+const MAX_SPEED := 200
 const SPEED = 150
-const JUMP_VELOCITY = -400.0
+const JUMP_VELOCITY = 400.0 # negative is up
 
+# place holder testing 
 @export var splatter_aim_cone: Area2D
 @export var splatter_detector: Area2D
-
+@export var character_graphics: Node2D
 @export var tile_layer: TileMapLayer
 @export var splatter_layer: TileMapLayer
+var DEBUG : bool = true;
 
+var left_arm
+
+# placeholder input code
 var held_action1_ticks: int = 0
 var held_space_ticks: int = 0
 
@@ -26,12 +33,82 @@ func get_aim_direction() -> Vector2:
 func get_aim_angle() -> float:
 	return get_angle_to(get_global_mouse_position())
 	
-func _draw() -> void:
-	var DEBUG_DISPLAY := true;
+func handle_movement(delta: float) -> void:
+	var direction := get_movement_direction()
+	var accel_vec : Vector2 = Vector2.ZERO
+	var apply_gravity : bool = true
 	
-	if DEBUG_DISPLAY:
+	var is_in_goo := false
+	if splatter_detector:
+		is_in_goo = splatter_detector.has_overlapping_bodies()
 		
-		# === aim direction display
+	elif DEBUG:
+		print("ERROR: %s does not have 'splatter_detector' set in editor" % self.name)
+	
+	# helper bool
+	# var holding_same_direction: bool = velocity.x * direction.x >= 0
+	var holding_oppos_direction: bool = velocity.x * direction.x < 0
+		
+	if is_on_floor():
+		
+		# movement keys
+		if abs(velocity.x + accel_vec.x) < MAX_SPEED:
+			accel_vec.x += direction.x * ACCEL
+			
+		if holding_oppos_direction:
+			accel_vec.x += direction.x * ACCEL
+		
+		if is_in_goo:
+			accel_vec.x -= velocity.x * 0.2
+			if velocity.y >= 0:
+				velocity.y = 0
+		# ground friction
+		accel_vec.x -= velocity.x * 0.15
+
+	else: 
+		# movement keys
+		if abs(velocity.x + accel_vec.x) < MAX_SPEED * 1.2:
+			if holding_oppos_direction:
+				accel_vec.x += direction.x * ACCEL * 0.35
+			
+			accel_vec.x += direction.x * ACCEL * 0.35
+		
+		# air friction
+		accel_vec.x -= velocity.x * 0.05
+			
+	if is_in_goo and is_on_wall():
+		# roll up walls
+		apply_gravity = false
+		accel_vec.y += direction.y * ACCEL * 0.4;
+		
+		# sticky
+		accel_vec.y -= velocity.y * 0.05
+		
+		# goo slide down	
+		accel_vec.y += get_gravity().y * 0.2 * delta
+			
+	if apply_gravity:
+		accel_vec.y += get_gravity().y * delta
+	
+	velocity += accel_vec
+	move_and_slide()
+	
+	# move_and_collide(accel_vec)
+
+func placeholder_graphics() -> void:
+	# graphics placeholder
+	if is_on_floor():
+		# PLACEHOLDER
+		character_graphics.rotation += velocity.x * 0.1 / (2 * 3.1415 * 10.0)
+	else:
+		character_graphics.rotation += velocity.x * 0.01 / (2 * 3.1415 * 10.0)
+
+	if is_on_wall():
+		var wall_right_side := int(sign(get_wall_normal().dot(Vector2.RIGHT)))
+		character_graphics.rotation += wall_right_side * velocity.y * 0.1 / (2 * 3.1415 * 10.0)
+
+func draw_debug_input_display() -> void:
+	# === aim direction display
 		var aim_direction := get_aim_direction()
 		var line_length := 30
 		draw_line(Vector2.ZERO, aim_direction * line_length, Color.GREEN, 1.0)
@@ -73,32 +150,24 @@ func _draw() -> void:
 			colorHeld1 = Color.RED
 		draw_rect(Rect2(-35.0, 0.0, 5.0, max(-10, -(held_space_ticks/4.0))), colorHeld1)
 	
+func _draw() -> void:
+	if DEBUG:
+		draw_debug_input_display()
+		
+		
 func _process(_float) -> void:
 	queue_redraw()
 	
 func _physics_process(delta: float) -> void:
-	# Add the gravity.
-	if not is_on_floor():
-		velocity += get_gravity() * delta
+	handle_movement(delta)
+	placeholder_graphics()
 
-	# Get the input direction and handle the movement/deceleration.
-	# As good practice, you should replace UI actions with custom gameplay actions.
-	var direction := get_movement_direction()
-		
-	if direction.x != 0:
-		velocity.x = direction.x * SPEED
-	else:
-		# friction
-		if is_on_floor():
-			velocity.x *= 0.4
-		else:
-			velocity.x *= 0.99
-			
+	
 	if Input.is_action_pressed("action_4"):
 		held_space_ticks += 1
 	elif Input.is_action_just_released("action_4"):
 		if held_space_ticks > 40:
-			velocity += get_aim_direction() * -JUMP_VELOCITY
+			velocity += get_aim_direction() * JUMP_VELOCITY
 		held_space_ticks = 0
 	else:
 		held_space_ticks = 0 
@@ -110,37 +179,29 @@ func _physics_process(delta: float) -> void:
 		# lightAction() // midAction() // heavyAction()
 		# called here
 		
+		# if held_action1_ticks > 0 && held_action1_ticks < 20:
+			
 		if held_action1_ticks >= 20 && held_action1_ticks < 40 && splatter_aim_cone:
 			splatter_aim_cone.rotation = get_aim_angle()
 			splatter_aim_cone.monitoring = true
 			splatter_aim_cone.visible = true
 			# splatter_layer.update_internals()
-
-
 		held_action1_ticks = 0
 	else:
 		held_action1_ticks = 0 
 		splatter_aim_cone.monitoring = false
 		splatter_aim_cone.visible = false
 		
-	if splatter_detector.has_overlapping_bodies():
-		if is_on_floor():
-			velocity.x *= 0.4
-		
-		if direction.y != 0 && is_on_wall():
-			velocity.y = direction.y * SPEED;
-			if is_on_floor() && velocity.y >= 0:
-				velocity.y = 0
-		elif is_on_wall():
-			velocity.y = get_gravity().y * delta * 0.2
 
-	move_and_slide()
+	
 
 func _ready():
+	# placeholder
 	splatter_aim_cone.body_shape_entered.connect(area_entered)
 	
-func area_entered(body_rid: RID, body: Node2D, body_shape_index: int, local_shape_index: int):
+func area_entered(body_rid: RID, body: Node2D, _body_shape_index: int, _local_shape_index: int):
 	if body.has_method("get_coords_for_body_rid"): 
 		# this is godot's instanceof
-		var tileCoords = body.get_coords_for_body_rid(body_rid)
-		splatter_layer.set_cell(tileCoords, 0, Vector2(0, 0))
+		var tile_coords = body.get_coords_for_body_rid(body_rid)
+		var atlas_coords = body.get_cell_atlas_coords(tile_coords)
+		splatter_layer.set_cell(tile_coords, 0, atlas_coords)
