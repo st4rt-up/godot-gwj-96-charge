@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://q4lnqgv1wxiu"]
 
-[ext_resource type="PackedScene" uid="uid://dd2taqpvypu2r" path="res://level/dummy_level.tscn" id="1_yx7mw"]
-[ext_resource type="PackedScene" uid="uid://dtrj1fb6xk68i" path="res://character/RobotCharacter.tscn" id="2_6bm6p"]
-[ext_resource type="Script" uid="uid://b2b54roqfxgym" path="res://tmp-debug/camera_2d.gd" id="2_dugkq"]
-[ext_resource type="Script" uid="uid://ccjktu1fxbe0f" path="res://tmp-debug/label.gd" id="2_ykeeq"]
+[ext_resource type="PackedScene" uid="uid://dd2taqpvypu2r" path="res://level/dummy_level.tscn" id="1_88dp7"]
+[ext_resource type="Script" uid="uid://b2b54roqfxgym" path="res://tmp-debug/camera_2d.gd" id="2_upx2w"]
+[ext_resource type="PackedScene" uid="uid://dtrj1fb6xk68i" path="res://character/RobotCharacter.tscn" id="3_1tchb"]
+[ext_resource type="Script" uid="uid://ccjktu1fxbe0f" path="res://tmp-debug/label.gd" id="4_pcdfe"]
 
 [sub_resource type="SegmentShape2D" id="SegmentShape2D_k0njw"]
 a = Vector2(0, -64)
@@ -13,7 +13,7 @@ a = Vector2(0, -64)
 
 [node name="MainGame" type="Node2D" unique_id=1856035722]
 
-[node name="dummy_level" parent="." unique_id=1403614458 instance=ExtResource("1_yx7mw")]
+[node name="dummy_level" parent="." unique_id=1403614458 instance=ExtResource("1_88dp7")]
 
 [node name="hand arm" parent="dummy_level" index="6" unique_id=501614596]
 z_index = 2
@@ -23,11 +23,11 @@ gravity = Vector2(0, 0)
 
 [node name="Camera2D" type="Camera2D" parent="dummy_level" unique_id=957198017 node_paths=PackedStringArray("target")]
 zoom = Vector2(2.355, 2.355)
-script = ExtResource("2_dugkq")
+script = ExtResource("2_upx2w")
 target = NodePath("../character")
 smoothing = 0.004
 
-[node name="character" parent="dummy_level" unique_id=2085195806 node_paths=PackedStringArray("tile_layer", "splatter_layer") instance=ExtResource("2_6bm6p")]
+[node name="character" parent="dummy_level" unique_id=2085195806 node_paths=PackedStringArray("tile_layer", "splatter_layer") instance=ExtResource("3_1tchb")]
 position = Vector2(-120, 0)
 tile_layer = NodePath("../TileMapLayer")
 splatter_layer = NodePath("../SplatterLayer")
@@ -75,6 +75,6 @@ grow_vertical = 0
 text = "text"
 horizontal_alignment = 1
 vertical_alignment = 1
-script = ExtResource("2_ykeeq")
+script = ExtResource("4_pcdfe")
 
 [editable path="dummy_level"]

@@ -20,7 +20,6 @@ signal charge_changed(new_charge: int)
 var charge: int = 100
 
 
-
 signal part_attached(part: Part, slot: Part.Slot)
 signal part_detached(slot: Part.Slot)
 signal part_updated()
