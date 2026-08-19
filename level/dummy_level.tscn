@@ -410,3 +410,34 @@ initial_velocity_min = 602.57
 initial_velocity_max = 602.57
 angle_min = -21.5
 color = Color(0, 0.8, 0, 1)
+
+[node name="hand arm2" type="Node2D" parent="." unique_id=2102151837 node_paths=PackedStringArray("particles")]
+position = Vector2(100, 3)
+script = ExtResource("8_0fph2")
+particles = NodePath("CPUParticles2D")
+equippable_to = Array[int]([0, 1])
+
+[node name="Area2D" type="Area2D" parent="hand arm2" unique_id=774078672]
+collision_layer = 8
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="hand arm2/Area2D" unique_id=1696289869]
+shape = SubResource("RectangleShape2D_k0njw")
+
+[node name="Sprite2D" type="Sprite2D" parent="hand arm2" unique_id=711294975]
+scale = Vector2(0.125, 0.25)
+texture = ExtResource("4_udabi")
+metadata/_edit_lock_ = true
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="hand arm2" unique_id=1152240273]
+emitting = false
+amount = 250
+lifetime = 0.48
+one_shot = true
+explosiveness = 0.5
+lifetime_randomness = 0.45
+local_coords = true
+initial_velocity_min = 602.57
+initial_velocity_max = 602.57
+angle_min = -21.5
+color = Color(0, 0.8, 0, 1)

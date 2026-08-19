@@ -18,14 +18,12 @@ script/source = "extends Node2D
 @export var sprite: Sprite2D
 "
 
-[node name="character" type="CharacterBody2D" unique_id=2085195806 node_paths=PackedStringArray("splatter_aim_cone", "splatter_detector", "character_graphics", "tile_layer", "splatter_layer", "pickup_box")]
+[node name="character" type="CharacterBody2D" unique_id=2085195806 node_paths=PackedStringArray("splatter_aim_cone", "splatter_detector", "character_graphics", "pickup_box")]
 floor_stop_on_slope = false
 script = ExtResource("1_x71v3")
 splatter_aim_cone = NodePath("apply_splatter_hitbox")
 splatter_detector = NodePath("splatter_collision_box")
 character_graphics = NodePath("graphics")
-tile_layer = NodePath("")
-splatter_layer = NodePath("")
 pickup_box = NodePath("pickup_box")
 
 [node name="collision_box" type="CollisionShape2D" parent="." unique_id=694453772]
@@ -73,3 +71,4 @@ metadata/_edit_lock_ = true
 polygon = PackedVector2Array(125, 50, 150, 0, 125, -50, 0, 0)
 
 [connection signal="area_entered" from="pickup_box" to="." method="_on_pickup_box_area_entered"]
+[connection signal="area_exited" from="pickup_box" to="." method="_on_pickup_box_area_exited"]

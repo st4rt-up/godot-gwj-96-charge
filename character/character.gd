@@ -29,6 +29,8 @@ var left_arm: Part
 var right_arm: Part
 var legs: Part
 
+var nearby_parts: Array[Part] = []
+
 # placeholder input code
 var held_action1_ticks: int = 0
 var held_space_ticks: int = 0
@@ -201,37 +203,48 @@ func _physics_process(delta: float) -> void:
 	handle_rolling_movement(delta)
 	placeholder_graphics()
 
-	if Input.is_action_pressed("action_4"):
-		held_space_ticks += 1
-	elif Input.is_action_just_released("action_4"):
-		if held_space_ticks > 40 && (is_on_floor() or is_on_wall_only()):
-			velocity += get_aim_direction() * JUMP_VELOCITY 
-		held_space_ticks = 0
-	else:
-		held_space_ticks = 0
-
-	# probably restructure
-	if Input.is_action_pressed("action_1"):
-		held_action1_ticks += 1
-	elif Input.is_action_just_released("action_1"):
-
-		var ac1: int = 10
-		var ac2: int = 40
-
-		if held_action1_ticks > 0 && held_action1_ticks < ac1:
-			# could factor out but leaving here because I have plans
-			if left_arm: left_arm.action_light()
-		elif held_action1_ticks >= ac1 && held_action1_ticks < ac2:
-			if left_arm: left_arm.action_medium()
-	else:
-		held_action1_ticks = 0
-
-
-	if Input.is_action_just_pressed("action_2"):
-		var parts = scan_for_nearby_parts()
+	if Input.is_action_pressed("attach"):
+		var parts = []
+		var part_to_replace
+		if Input.is_action_just_pressed("action_1"):
+			parts = scan_for_nearby_parts(Part.Slot.LEFT_ARM)
+			part_to_replace = left_arm
+		elif Input.is_action_just_pressed("action_2"):
+			parts = scan_for_nearby_parts(Part.Slot.RIGHT_ARM)
+			part_to_replace = right_arm
+		elif Input.is_action_just_pressed("action_3"):
+			parts = scan_for_nearby_parts(Part.Slot.LEGS)
+			part_to_replace = legs
 		if !parts.is_empty():
-			left_arm = parts[0]
-			left_arm.character = self
+			part_to_replace = parts[0]
+			part_to_replace.character = self
+			print(part_to_replace.name)
+
+	else:
+		if Input.is_action_pressed("action_4"):
+			held_space_ticks += 1
+		elif Input.is_action_just_released("action_4"):
+			if held_space_ticks > 40 && (is_on_floor() or is_on_wall_only()):
+				velocity += get_aim_direction() * JUMP_VELOCITY 
+			held_space_ticks = 0
+		else:
+			held_space_ticks = 0
+
+		# probably restructure
+		if Input.is_action_pressed("action_1"):
+			held_action1_ticks += 1
+		elif Input.is_action_just_released("action_1"):
+
+			var ac1: int = 10
+			var ac2: int = 40
+
+			if held_action1_ticks > 0 && held_action1_ticks < ac1:
+				# could factor out but leaving here because I have plans
+				if left_arm: left_arm.action_light()
+			elif held_action1_ticks >= ac1 && held_action1_ticks < ac2:
+				if left_arm: left_arm.action_medium()
+		else:
+			held_action1_ticks = 0
 
 func use_charge_if_possible(cost: int) -> bool:
 	if cost > charge: return false
@@ -240,21 +253,38 @@ func use_charge_if_possible(cost: int) -> bool:
 		charge_changed.emit(charge)
 		return true
 
-func scan_for_nearby_parts() -> Array[Part]:
+# all cached parts that fit `slot`, nearest first
+func scan_for_nearby_parts(slot: Part.Slot) -> Array[Part]:
 	var result: Array[Part] = []
-	if !pickup_box.has_overlapping_areas(): return result
 
-	for pickup in pickup_box.get_overlapping_areas():
-		var candidate = pickup.get_parent()
-		if candidate != null && candidate is Part:
-			print(candidate.name)
-			result.insert(0, candidate)
+	for part in nearby_parts:
+		if !is_instance_valid(part): continue
+		if part.equippable_to.has(slot):
+			result.append(part)
+
+	var origin := global_position
+	result.sort_custom(func(a: Part, b: Part) -> bool:
+		return a.global_position.distance_squared_to(origin) \
+			< b.global_position.distance_squared_to(origin))
+
 	return result
 
 func _ready():
-	pickup_box.area_entered.connect(_on_pickup_box_area_entered)
 	charge_changed.emit(charge)
 
 
 func _on_pickup_box_area_entered(area: Area2D) -> void:
-	pass # Replace with function body.
+	var part := area.get_parent() as Part
+	if part == null: return
+	if nearby_parts.has(part): return
+
+	nearby_parts.append(part)
+	if DEBUG: print("part in range: %s" % part.name)
+
+
+func _on_pickup_box_area_exited(area: Area2D) -> void:
+	var part := area.get_parent() as Part
+	if part == null: return
+
+	nearby_parts.erase(part)
+	if DEBUG: print("part out of range: %s" % part.name)
