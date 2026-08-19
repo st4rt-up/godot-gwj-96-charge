@@ -235,9 +235,9 @@ func handle_attach() -> void:
 	if Input.is_action_just_pressed("action_1"):
 		slot = Part.Slot.LEFT_ARM
 	elif Input.is_action_just_pressed("action_2"):
-		slot = Part.Slot.LEFT_ARM
+		slot = Part.Slot.RIGHT_ARM
 	elif Input.is_action_just_pressed("action_3"):
-		slot = Part.Slot.LEFT_ARM
+		slot = Part.Slot.LEGS
 	else: 
 		return
 		

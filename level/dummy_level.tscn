@@ -384,7 +384,7 @@ metadata/_edit_lock_ = true
 position = Vector2(-64, 3)
 script = ExtResource("8_0fph2")
 particles = NodePath("CPUParticles2D")
-equippable_to = Array[int]([0, 1])
+equippable_to = Array[int]([0, 1, 2])
 
 [node name="Area2D" type="Area2D" parent="hand arm" unique_id=1102291527]
 collision_layer = 8
@@ -415,7 +415,7 @@ color = Color(0, 0.8, 0, 1)
 position = Vector2(100, 3)
 script = ExtResource("8_0fph2")
 particles = NodePath("CPUParticles2D")
-equippable_to = Array[int]([0, 1])
+equippable_to = Array[int]([0, 1, 2])
 
 [node name="Area2D" type="Area2D" parent="hand arm2" unique_id=774078672]
 collision_layer = 8
