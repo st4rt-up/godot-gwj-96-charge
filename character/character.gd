@@ -203,22 +203,7 @@ func _physics_process(delta: float) -> void:
 	placeholder_graphics()
 
 	if Input.is_action_pressed("attach"):
-		var parts = []
-		var part_to_replace
-		if Input.is_action_just_pressed("action_1"):
-			parts = scan_for_nearby_parts(Part.Slot.LEFT_ARM)
-			part_to_replace = left_arm
-		elif Input.is_action_just_pressed("action_2"):
-			parts = scan_for_nearby_parts(Part.Slot.RIGHT_ARM)
-			part_to_replace = right_arm
-		elif Input.is_action_just_pressed("action_3"):
-			parts = scan_for_nearby_parts(Part.Slot.LEGS)
-			part_to_replace = legs
-		if !parts.is_empty():
-			part_to_replace = parts[0]
-			part_to_replace.character = self
-			print(part_to_replace.name)
-
+		handle_attach()
 	else:
 		if Input.is_action_pressed("action_4"):
 			held_space_ticks += 1
@@ -244,6 +229,41 @@ func _physics_process(delta: float) -> void:
 				if left_arm: left_arm.action_medium()
 		else:
 			held_action1_ticks = 0
+
+func handle_attach() -> void:
+	var slot : Part.Slot 
+	if Input.is_action_just_pressed("action_1"):
+		slot = Part.Slot.LEFT_ARM
+	elif Input.is_action_just_pressed("action_2"):
+		slot = Part.Slot.LEFT_ARM
+	elif Input.is_action_just_pressed("action_3"):
+		slot = Part.Slot.LEFT_ARM
+	else: 
+		return
+		
+	var candidate_parts = scan_for_nearby_parts(slot)
+	if candidate_parts.is_empty(): return
+	
+	var nearest_part : Part = candidate_parts[0]
+	if attach_part_if_able(nearest_part, slot):
+		print("DEBUG: attached %s to slot %s" % [nearest_part.name, slot])
+
+func attach_part_if_able(part: Part, slot: Part.Slot) -> bool:
+	if part == null: return false
+	
+	match slot:
+		Part.Slot.LEFT_ARM:
+			if left_arm: return false
+			left_arm = part
+		Part.Slot.RIGHT_ARM:
+			if right_arm: return false
+			right_arm = part
+		Part.Slot.LEGS:
+			if legs: return false
+			legs = part
+			
+	part.character = self
+	return false
 
 func use_charge_if_possible(cost: int) -> bool:
 	if cost > charge: return false
