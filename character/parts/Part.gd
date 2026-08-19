@@ -18,6 +18,9 @@ enum Slot {
 	LEGS,
 }
 
+func handle_actions() -> void:
+	return
+
 func action_light() -> void:
 	return
 

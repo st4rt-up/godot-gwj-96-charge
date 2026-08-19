@@ -278,6 +278,11 @@ func scan_for_nearby_parts(slot: Part.Slot) -> Array[Part]:
 
 	for part in nearby_parts:
 		if !is_instance_valid(part): continue
+		if !(part is Part): continue
+		if (left_arm != null) and left_arm == part: continue
+		if (right_arm != null) and right_arm == part: continue
+		if (legs != null) and legs == part: continue
+		
 		if part.equippable_to.has(slot):
 			result.append(part)
 
