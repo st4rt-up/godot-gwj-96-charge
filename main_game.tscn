@@ -5,6 +5,11 @@
 [ext_resource type="PackedScene" uid="uid://dtrj1fb6xk68i" path="res://character/RobotCharacter.tscn" id="3_1tchb"]
 [ext_resource type="Script" uid="uid://ccjktu1fxbe0f" path="res://tmp-debug/label.gd" id="4_pcdfe"]
 
+[sub_resource type="Curve" id="Curve_dugkq"]
+_limits = [0.0, 60.0, 0.0, 1.0]
+_data = [Vector2(0, 0), 0.0, 60.606056, 0, 1, Vector2(0.33, 20), 60.606056, 60.606056, 1, 1, Vector2(0.66, 40), 60.606056, 58.823536, 1, 1, Vector2(1, 60), 58.823536, 0.0, 1, 0]
+point_count = 4
+
 [sub_resource type="SegmentShape2D" id="SegmentShape2D_k0njw"]
 a = Vector2(0, -64)
 
@@ -17,6 +22,7 @@ a = Vector2(0, -64)
 
 [node name="hand arm" parent="dummy_level" index="6" unique_id=501614596]
 z_index = 2
+hold_time_curve = SubResource("Curve_dugkq")
 
 [node name="CPUParticles2D" parent="dummy_level/hand arm" index="2" unique_id=1993449934]
 gravity = Vector2(0, 0)
