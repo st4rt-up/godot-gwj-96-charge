@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://dtrj1fb6xk68i"]
+
+[ext_resource type="Script" uid="uid://cb0tdol00p5ru" path="res://character/character.gd" id="1_x71v3"]
+[ext_resource type="Texture2D" uid="uid://3fs2w4r8hqv4" path="res://assets/icon.svg" id="2_28ew8"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_k0njw"]
+radius = 16.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_muixn"]
+radius = 97.04638
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vy0ww"]
+radius = 20.0
+
+[sub_resource type="GDScript" id="GDScript_vy0ww"]
+script/source = "extends Node2D
+
+@export var sprite: Sprite2D
+"
+
+[node name="character" type="CharacterBody2D" unique_id=2085195806 node_paths=PackedStringArray("splatter_aim_cone", "splatter_detector", "character_graphics", "tile_layer", "splatter_layer", "pickup_box")]
+floor_stop_on_slope = false
+script = ExtResource("1_x71v3")
+splatter_aim_cone = NodePath("apply_splatter_hitbox")
+splatter_detector = NodePath("splatter_collision_box")
+character_graphics = NodePath("graphics")
+tile_layer = NodePath("")
+splatter_layer = NodePath("")
+pickup_box = NodePath("pickup_box")
+
+[node name="collision_box" type="CollisionShape2D" parent="." unique_id=694453772]
+shape = SubResource("CircleShape2D_k0njw")
+metadata/_edit_lock_ = true
+
+[node name="pickup_box" type="Area2D" parent="." unique_id=1833070550]
+visible = false
+collision_layer = 0
+collision_mask = 8
+metadata/_edit_lock_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="pickup_box" unique_id=1584248219]
+visible = false
+shape = SubResource("CircleShape2D_muixn")
+debug_color = Color(0, 0.9137255, 0, 0.41960785)
+
+[node name="splatter_collision_box" type="Area2D" parent="." unique_id=109504262]
+visible = false
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="splatter_collision_box" unique_id=475350916]
+shape = SubResource("CircleShape2D_vy0ww")
+metadata/_edit_lock_ = true
+
+[node name="graphics" type="Node2D" parent="." unique_id=493360863 node_paths=PackedStringArray("sprite")]
+script = SubResource("GDScript_vy0ww")
+sprite = NodePath("Sprite2D")
+
+[node name="Sprite2D" type="Sprite2D" parent="graphics" unique_id=885619222]
+position = Vector2(-3.33786e-06, -7.1525574e-07)
+scale = Vector2(0.25000003, 0.24999999)
+texture = ExtResource("2_28ew8")
+metadata/_edit_lock_ = true
+
+[node name="apply_splatter_hitbox" type="Area2D" parent="." unique_id=447672277]
+visible = false
+collision_layer = 0
+collision_mask = 2
+input_pickable = false
+metadata/_edit_lock_ = true
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="apply_splatter_hitbox" unique_id=1143900197]
+polygon = PackedVector2Array(125, 50, 150, 0, 125, -50, 0, 0)
+
+[connection signal="area_entered" from="pickup_box" to="." method="_on_pickup_box_area_entered"]

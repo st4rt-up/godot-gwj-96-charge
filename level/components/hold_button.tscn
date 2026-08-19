@@ -1,12 +1,13 @@
-[gd_scene format=3 uid="uid://nebq3xuprv8q"]
+[gd_scene format=3 uid="uid://ceju24awvswnv"]
 
-[ext_resource type="Script" uid="uid://qneov68d8qgx" path="res://game_components/press_button.gd" id="1_es58v"]
+[ext_resource type="Script" uid="uid://cs8rbmukhkfh3" path="res://level/components/hold_button.gd" id="1_uwqvg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_muixn"]
 size = Vector2(16, 16)
 
-[node name="press_button" type="Node2D" unique_id=1308775342 node_paths=PackedStringArray("collision_box", "DEBUG_LABEL")]
-script = ExtResource("1_es58v")
+[node name="hold_button" type="Node2D" unique_id=1308775342 node_paths=PackedStringArray("collision_box", "DEBUG_LABEL")]
+visible = false
+script = ExtResource("1_uwqvg")
 collision_box = NodePath("button_hitbox")
 DEBUG_LABEL = NodePath("debug_label")
 

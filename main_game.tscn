@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://q4lnqgv1wxiu"]
+
+[ext_resource type="PackedScene" uid="uid://dd2taqpvypu2r" path="res://level/dummy_level.tscn" id="1_yx7mw"]
+[ext_resource type="PackedScene" uid="uid://dtrj1fb6xk68i" path="res://character/RobotCharacter.tscn" id="2_6bm6p"]
+[ext_resource type="Script" uid="uid://b2b54roqfxgym" path="res://tmp-debug/camera_2d.gd" id="2_dugkq"]
+[ext_resource type="Script" uid="uid://ccjktu1fxbe0f" path="res://tmp-debug/label.gd" id="2_ykeeq"]
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_k0njw"]
+a = Vector2(0, -64)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_6bm6p"]
+a = Vector2(0, -64)
+
+[node name="MainGame" type="Node2D" unique_id=1856035722]
+
+[node name="dummy_level" parent="." unique_id=1403614458 instance=ExtResource("1_yx7mw")]
+
+[node name="hand arm" parent="dummy_level" index="6" unique_id=501614596]
+z_index = 2
+
+[node name="CPUParticles2D" parent="dummy_level/hand arm" index="2" unique_id=1993449934]
+gravity = Vector2(0, 0)
+
+[node name="Camera2D" type="Camera2D" parent="dummy_level" unique_id=957198017 node_paths=PackedStringArray("target")]
+zoom = Vector2(2.355, 2.355)
+script = ExtResource("2_dugkq")
+target = NodePath("../character")
+smoothing = 0.004
+
+[node name="character" parent="dummy_level" unique_id=2085195806 node_paths=PackedStringArray("tile_layer", "splatter_layer") instance=ExtResource("2_6bm6p")]
+position = Vector2(-120, 0)
+tile_layer = NodePath("../TileMapLayer")
+splatter_layer = NodePath("../SplatterLayer")
+
+[node name="Area2D" type="Area2D" parent="dummy_level" unique_id=2024942510]
+visible = false
+z_index = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="dummy_level/Area2D" unique_id=208012094]
+position = Vector2(0, 64)
+shape = SubResource("SegmentShape2D_k0njw")
+debug_color = Color(0.99215686, 0, 0, 1)
+
+[node name="Area2D2" type="Area2D" parent="dummy_level" unique_id=1919385240]
+visible = false
+z_index = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="dummy_level/Area2D2" unique_id=1449814089]
+position = Vector2(0, 64)
+shape = SubResource("SegmentShape2D_6bm6p")
+debug_color = Color(0.99215686, 1, 0, 1)
+
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=998503370]
+
+[node name="Control" type="Control" parent="UILayer" unique_id=470443545]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="UILayer/Control" unique_id=620517239]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -24.0
+offset_right = 39.0
+offset_bottom = -1.0
+grow_vertical = 0
+text = "text"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("2_ykeeq")
+
+[editable path="dummy_level"]
