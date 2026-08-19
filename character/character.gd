@@ -241,12 +241,14 @@ func handle_attach() -> void:
 	else: 
 		return
 		
-	var candidate_parts = scan_for_nearby_parts(slot)
-	if candidate_parts.is_empty(): return
 	
-	var nearest_part : Part = candidate_parts[0]
+	var candidate_parts = scan_for_nearby_parts(slot)
+
+	var nearest_part : Part = candidate_parts[0] if !candidate_parts.is_empty() else null
 	if attach_part_if_able(nearest_part, slot):
 		print("DEBUG: attached %s to slot %s" % [nearest_part.name, slot])
+	else:
+		detach_part(slot)
 
 func attach_part_if_able(part: Part, slot: Part.Slot) -> bool:
 	if part == null: return false
@@ -263,7 +265,30 @@ func attach_part_if_able(part: Part, slot: Part.Slot) -> bool:
 			legs = part
 			
 	part.character = self
-	return false
+	return true
+
+func detach_part(slot: Part.Slot) -> bool:
+	var part: Part = null
+
+	match slot:
+		Part.Slot.LEFT_ARM:
+			part = left_arm
+			left_arm = null
+		Part.Slot.RIGHT_ARM:
+			part = right_arm
+			right_arm = null
+		Part.Slot.LEGS:
+			part = legs
+			legs = null
+
+	if part == null: return false
+	
+	# drop the part at the current position
+	part.global_position = global_position
+	part.character = null
+	part.detach()
+
+	return true
 
 func use_charge_if_possible(cost: int) -> bool:
 	if cost > charge: return false
