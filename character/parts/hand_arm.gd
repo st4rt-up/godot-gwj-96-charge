@@ -5,10 +5,10 @@ extends Part
 func _ready() -> void:
 	charge = charge_capacity
 
-func action_light() -> void:
+func action_light_default() -> void:
 	impulse_raycast(character.get_aim_direction(), character.global_position, 250, 100.0)
 
-func action_medium() -> void:
+func action_medium_default() -> void:
 	# if use_charge_if_possible(30):
 	# print("attempted to splatter from hand arm")
 	
