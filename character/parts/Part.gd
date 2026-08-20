@@ -5,6 +5,7 @@ var character: RobotCharacter
 
 # == charge
 var charge: int = 0
+var pickup_charge: int = 10
 var charge_capacity: int = 100
 signal charge_changed(new_charge: int)
 

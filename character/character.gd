@@ -238,6 +238,8 @@ func attach_part_if_possible(part: Part, slot: Part.Slot) -> bool:
 		Part.Slot.LEGS: legs = part
 			
 	part.attach_to_character(self)
+	if part.charge == 0:
+		send_charge_if_possible(part.pickup_charge, part)
 	nearby_parts.erase(part)
 	EventBus.emit_signal("nearby_parts_updated", nearby_parts)
 	EventBus.emit_signal("body_attached_part", part, slot)

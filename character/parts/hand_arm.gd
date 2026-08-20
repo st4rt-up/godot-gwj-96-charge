@@ -3,7 +3,7 @@ extends Part
 @export var particles: CPUParticles2D
 
 func _ready() -> void:
-	charge = 10
+	charge = 0
 
 func action_light_default() -> void:
 	impulse_raycast(character.get_aim_direction(), character.global_position, 250, 100.0)
