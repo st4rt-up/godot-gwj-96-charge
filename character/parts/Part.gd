@@ -4,14 +4,14 @@ class_name Part
 var character: RobotCharacter
 
 # == charge
-var charge: int = charge_capacity
+var charge: int = 0
 var charge_capacity: int = 100
 signal charge_changed(new_charge: int)
 
 var handle_actions : Callable = handle_actions_default
-var action_light : Callable = empty_action
-var action_medium : Callable = empty_action
-var action_heavy : Callable = empty_action
+var action_light : Callable = action_light_default
+var action_medium : Callable = action_medium_default
+var action_heavy : Callable = action_heavy_default
 
 var modifier : Modifier
 @export var equippable_to: Array[Slot]
@@ -24,10 +24,10 @@ enum Slot { LEFT_ARM, RIGHT_ARM, LEGS, }
 
 func handle_actions_default(input_name: String) -> void:
 	if !can_do_actions: return 
-	var t1 :float = int(hold_time_curve.sample(0.0)) if hold_time_curve else 0.0
-	var t2 :float = int(hold_time_curve.sample(0.33)) if hold_time_curve else 10.0
-	var t3 :float = int(hold_time_curve.sample(0.66)) if hold_time_curve else 35.0
-	var t4 :float = int(hold_time_curve.sample(1.0)) if hold_time_curve else 60.0
+	var t1 :float = get_light_hold_ticks()
+	var t2 :float = get_medium_hold_ticks()
+	var t3 :float = get_heavy_hold_ticks()
+	# var t4 :float = int(hold_time_curve.sample(1.0)) if hold_time_curve else 60.0
 	
 	if Input.is_action_pressed(input_name):
 		input_held_time += 1
@@ -35,10 +35,19 @@ func handle_actions_default(input_name: String) -> void:
 		if t1 <= input_held_time and input_held_time < t2:
 			action_light.call () if action_light != null else action_light_default
 		elif t2 <= input_held_time and input_held_time < t3:
-			action_light.call () if action_light != null else action_light_default
-		elif t4 <= input_held_time:
-			action_light.call () if action_light != null else action_light_default
+			action_medium.call () if action_medium != null else action_medium_default
+		elif t3 <= input_held_time:
+			action_heavy.call () if action_heavy != null else action_heavy_default
 		input_held_time = 0
+
+func get_light_hold_ticks() -> int:
+	return int(hold_time_curve.sample(0.0)) if hold_time_curve else 0
+
+func get_medium_hold_ticks() -> int:
+	return int(hold_time_curve.sample(0.33)) if hold_time_curve else 10
+
+func get_heavy_hold_ticks() -> int:
+	return int(hold_time_curve.sample(0.66)) if hold_time_curve else 35
 
 func empty_action() -> void:
 	return
@@ -54,7 +63,7 @@ func action_heavy_default() -> void:
 	
 func attach_to_character(char: RobotCharacter) -> bool:
 	if char == null: return false
-	char = character
+	character = char
 	return true
 
 func detach_from_character() -> bool:
@@ -65,12 +74,16 @@ func detach_from_character() -> bool:
 func accept_charge_if_possible (additional_charge: int) -> int:
 	# return accepted charge as int
 	var accepted_charge : int = 0;
-	if charge == charge_capacity: return accepted_charge
-	
+	if charge >= charge_capacity: return accepted_charge
+
 	if additional_charge + charge > charge_capacity:
 		accepted_charge = charge_capacity - charge
 		charge = charge_capacity
-	
+	else:
+		accepted_charge = additional_charge
+		charge += additional_charge
+
+	charge_changed.emit(charge)
 	return accepted_charge
 
 func use_charge_if_possible (cost: int) -> bool:

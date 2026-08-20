@@ -21,6 +21,10 @@ var DEBUG : bool = true;
 var charge: int = 100
 var charge_capacity: int = 100
 
+# attach mode: physics ticks per 1 charge sent to the held part
+const CHARGE_TICK_INTERVAL := 50
+var charge_ticks: int = 0
+
 # == parts
 var left_arm: Part
 var right_arm: Part
@@ -44,8 +48,10 @@ func _physics_process(delta: float) -> void:
 		EventBus.emit_signal("body_attaching_state_changed", Input.is_action_pressed("attach"))
 
 	if Input.is_action_pressed("attach"):
+		handle_charge_part()
 		handle_attach()
 	else:
+		charge_ticks = 0
 		placeholder_jump()
 		handle_part_actions()
 
@@ -193,25 +199,32 @@ func get_part_in_slot(slot: Part.Slot) -> Part:
 			return legs
 	return null
 
+func get_part_slot(input_check: Callable = Input.is_action_just_pressed) -> int:
+	if input_check.call("action_1"): return Part.Slot.LEFT_ARM
+	if input_check.call("action_2"): return Part.Slot.RIGHT_ARM
+	if input_check.call("action_3"): return Part.Slot.LEGS
+	return -1
+
 func handle_attach() -> void:
-	var slot : Part.Slot 
-	if Input.is_action_just_pressed("action_1"):
-		slot = Part.Slot.LEFT_ARM
-	elif Input.is_action_just_pressed("action_2"):
-		slot = Part.Slot.RIGHT_ARM
-	elif Input.is_action_just_pressed("action_3"):
-		slot = Part.Slot.LEGS
-	else: 
+	var slot : int = get_part_slot()
+	if slot != -1:
+		var candidate_parts = scan_for_nearby_parts(slot)
+
+		var nearest_part : Part = candidate_parts[0] if !candidate_parts.is_empty() else null
+		if attach_part_if_possible(nearest_part, slot):
+			charge_ticks = nearest_part.get_heavy_hold_ticks()
+			print("DEBUG: attached %s to slot %s" % [nearest_part.name, slot])
 		return
 	
-	var candidate_parts = scan_for_nearby_parts(slot)
+	# detach waits for released
+	var released : int = get_part_slot(Input.is_action_just_released)
+	if released == -1: return
 
-	var nearest_part : Part = candidate_parts[0] if !candidate_parts.is_empty() else null
-	if attach_part_if_possible(nearest_part, slot):
-		print("DEBUG: attached %s to slot %s" % [nearest_part.name, slot])
-	else:
-		# placeholder, implement "detaching/di" mode
-		detach_part_if_possible(slot)
+	var part : Part = get_part_in_slot(released)
+	if part == null or charge_ticks >= part.get_heavy_hold_ticks(): return
+
+	# placeholder, implement "detaching/di" mode
+	detach_part_if_possible(released)	# detach if tap
 
 func attach_part_if_possible(part: Part, slot: Part.Slot) -> bool:
 	if part == null: return false	
@@ -270,9 +283,25 @@ func scan_for_nearby_parts(slot: Part.Slot) -> Array[Part]:
 			< b.global_position.distance_squared_to(origin))
 
 	return result
+	
+func handle_charge_part() -> void:
+	# a fresh press starts a new hold; the count is left alone on release
+	# so handle_attach can still read how long the button was down
+	if get_part_slot() != -1: charge_ticks = 0
+
+	var slot : int = get_part_slot(Input.is_action_pressed)
+	var part : Part = get_part_in_slot(slot) if slot != -1 else null
+	if part == null: return
+
+	charge_ticks += 1
+	if charge_ticks < part.get_heavy_hold_ticks(): return
+	if charge_ticks % CHARGE_TICK_INTERVAL != 0: return
+
+	send_charge_if_possible(1, part)
 
 # == charge related code
 func set_charge(new_charge: int) -> void:
+	
 	if charge > charge_capacity: return
 	if new_charge > charge_capacity:
 		charge = charge_capacity
@@ -283,7 +312,8 @@ func set_charge(new_charge: int) -> void:
 
 func send_charge_if_possible(amt : int, part: Part) -> bool:
 	if part.charge >= part.charge_capacity: return false
-	if charge > amt: return false
+	if DEBUG: print("DEBUG: sending %s charge to %s. current capcity %s " % [amt, part.name, charge])
+	if amt > charge: return false
 	
 	var accepted_charge := part.accept_charge_if_possible(amt)
 	if accepted_charge == 0: return false
