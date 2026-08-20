@@ -15,6 +15,19 @@ detaching mode
 
 
 ## quick restart
+#### save/load
+- make save_state and load_state functions
+save_state() -> Dictionary
+load_state(state: Dictionary) -> bool
+
+example:
+	save_state()
+		var current_state : Dictionary
+		current_state["charge"] = self.charge
+		
+	load_state(state: Dictionary)
+		charge = state("charge", charge_capacity)
+		
 
 # input remapping
 # volume controls
