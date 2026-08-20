@@ -8,45 +8,59 @@ var charge: int = charge_capacity
 var charge_capacity: int = 100
 signal charge_changed(new_charge: int)
 
+var handle_actions : Callable = handle_actions_default
+var action_light : Callable = empty_action
+var action_medium : Callable = empty_action
+var action_heavy : Callable = empty_action
+
+var modifier : Modifier
 @export var equippable_to: Array[Slot]
 var can_do_actions : bool = true
 
 @export var hold_time_curve: Curve
-var held_time_ticks :int  = 0
+var input_held_time :int  = 0
 
 enum Slot { LEFT_ARM, RIGHT_ARM, LEGS, }
 
-func handle_actions(input_name: String) -> void:
+func handle_actions_default(input_name: String) -> void:
+	if !can_do_actions: return 
 	var t1 :float = int(hold_time_curve.sample(0.0)) if hold_time_curve else 0.0
 	var t2 :float = int(hold_time_curve.sample(0.33)) if hold_time_curve else 10.0
 	var t3 :float = int(hold_time_curve.sample(0.66)) if hold_time_curve else 35.0
 	var t4 :float = int(hold_time_curve.sample(1.0)) if hold_time_curve else 60.0
 	
 	if Input.is_action_pressed(input_name):
-		held_time_ticks += 1
+		input_held_time += 1
 	elif Input.is_action_just_released(input_name):
-		if t1 <= held_time_ticks and held_time_ticks < t2:
-			action_light()
-		elif t2 <= held_time_ticks and held_time_ticks < t3:
-			action_medium()
-		elif t4 <= held_time_ticks:
-			action_heavy()
-		held_time_ticks = 0
+		if t1 <= input_held_time and input_held_time < t2:
+			action_light.call () if action_light != null else action_light_default
+		elif t2 <= input_held_time and input_held_time < t3:
+			action_light.call () if action_light != null else action_light_default
+		elif t4 <= input_held_time:
+			action_light.call () if action_light != null else action_light_default
+		input_held_time = 0
 
-func action_light() -> void:
+func empty_action() -> void:
 	return
 
-func action_medium() -> void:
+func action_light_default() -> void:
 	return
 
-func action_heavy() -> void:
+func action_medium_default() -> void:
+	return
+
+func action_heavy_default() -> void:
 	return
 	
-func attach() -> bool:
-	return false
+func attach_to_character(char: RobotCharacter) -> bool:
+	if char == null: return false
+	char = character
+	return true
 
-func detach() -> bool:
-	return false
+func detach_from_character() -> bool:
+	if character == null: return false
+	character = null
+	return true
 
 func accept_charge_if_possible (additional_charge: int) -> int:
 	# return accepted charge as int

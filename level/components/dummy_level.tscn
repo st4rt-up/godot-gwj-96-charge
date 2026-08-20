@@ -443,3 +443,6 @@ initial_velocity_min = 602.57
 initial_velocity_max = 602.57
 angle_min = -21.5
 color = Color(0, 0.8, 0, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1636479638]
+deterministic = true

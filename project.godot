@@ -21,11 +21,11 @@ EventBus="*uid://c3uwjgoxjvabr"
 
 [display]
 
+window/size/mode=2
 window/size/initial_position_type=0
 window/size/borderless=true
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/stretch/scale_mode="integer"
 
 [input]
 
