@@ -178,6 +178,8 @@ occlusion_layer_0/light_mask = 1
 occlusion_layer_0/sdf_collision = true
 physics_layer_0/collision_layer = 3
 physics_layer_0/collision_mask = 0
+custom_data_layer_0/name = ""
+custom_data_layer_0/type = 25
 sources/0 = SubResource("TileSetAtlasSource_d66et")
 pattern_0 = SubResource("TileMapPattern_ijhar")
 pattern_1 = SubResource("TileMapPattern_m1u62")
@@ -384,7 +386,7 @@ metadata/_edit_lock_ = true
 position = Vector2(-64, 3)
 script = ExtResource("8_0fph2")
 particles = NodePath("CPUParticles2D")
-equippable_to = Array[int]([0, 1, 2])
+equippable_to = Array[int]([0, 1])
 
 [node name="Area2D" type="Area2D" parent="hand arm" unique_id=1102291527]
 collision_layer = 8

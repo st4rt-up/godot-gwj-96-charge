@@ -2,6 +2,8 @@ extends Part
 
 @export var particles: CPUParticles2D
 
+func _ready() -> void:
+	charge = charge_capacity
 
 func action_light() -> void:
 	impulse_raycast(character.get_aim_direction(), character.global_position, 250, 100.0)
@@ -9,6 +11,8 @@ func action_light() -> void:
 func action_medium() -> void:
 	# if use_charge_if_possible(30):
 	# print("attempted to splatter from hand arm")
+	
+	if !use_charge_if_possible(30): return
 	impulse_raycast(character.get_aim_direction(), character.global_position, 500, 250.0)
 	var spread = (PI / 8)
 	if particles:

@@ -3,7 +3,12 @@
 [ext_resource type="PackedScene" uid="uid://dd2taqpvypu2r" path="res://level/dummy_level.tscn" id="1_88dp7"]
 [ext_resource type="Script" uid="uid://b2b54roqfxgym" path="res://tmp-debug/camera_2d.gd" id="2_upx2w"]
 [ext_resource type="PackedScene" uid="uid://dtrj1fb6xk68i" path="res://character/RobotCharacter.tscn" id="3_1tchb"]
+[ext_resource type="Script" uid="uid://cieymwbr6aavf" path="res://ui_battery.gd" id="4_2pltu"]
 [ext_resource type="Script" uid="uid://ccjktu1fxbe0f" path="res://tmp-debug/label.gd" id="4_pcdfe"]
+[ext_resource type="Script" uid="uid://cnb1fcrymf2oq" path="res://left_arm_tracker.gd" id="5_2pltu"]
+[ext_resource type="Script" uid="uid://c5b43maybar0f" path="res://right_arm_tracker.gd" id="6_f52ns"]
+[ext_resource type="Script" uid="uid://7j2bdtnptyn2" path="res://legs_tracker.gd" id="7_l5ukw"]
+[ext_resource type="Script" uid="uid://d4kgixqqr7hb7" path="res://nearby.gd" id="8_4srsv"]
 
 [sub_resource type="Curve" id="Curve_dugkq"]
 _limits = [0.0, 60.0, 0.0, 1.0]
@@ -28,7 +33,7 @@ hold_time_curve = SubResource("Curve_dugkq")
 gravity = Vector2(0, 0)
 
 [node name="Camera2D" type="Camera2D" parent="dummy_level" unique_id=957198017 node_paths=PackedStringArray("target")]
-zoom = Vector2(2.355, 2.355)
+zoom = Vector2(2.195, 2.195)
 script = ExtResource("2_upx2w")
 target = NodePath("../character")
 smoothing = 0.004
@@ -58,7 +63,54 @@ debug_color = Color(0.99215686, 1, 0, 1)
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=998503370]
 
+[node name="root" type="Control" parent="UILayer" unique_id=723875801]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="nearby" type="Label" parent="UILayer/root" unique_id=894714983]
+layout_mode = 0
+offset_left = 136.0
+offset_top = 424.0
+offset_right = 191.0
+offset_bottom = 473.0
+text = "nearby
+"
+script = ExtResource("8_4srsv")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UILayer/root" unique_id=489340844]
+layout_mode = 0
+offset_left = 136.0
+offset_top = 48.0
+offset_right = 176.0
+offset_bottom = 88.0
+metadata/_edit_lock_ = true
+
+[node name="main" type="Label" parent="UILayer/root/VBoxContainer" unique_id=620517239]
+layout_mode = 2
+text = "main"
+script = ExtResource("4_pcdfe")
+
+[node name="left_arm_tracker" type="Label" parent="UILayer/root/VBoxContainer" unique_id=406533998]
+layout_mode = 2
+text = "left"
+script = ExtResource("5_2pltu")
+
+[node name="right_arm_tracker" type="Label" parent="UILayer/root/VBoxContainer" unique_id=1061956081]
+layout_mode = 2
+text = "right"
+script = ExtResource("6_f52ns")
+
+[node name="legs_tracker" type="Label" parent="UILayer/root/VBoxContainer" unique_id=732432811]
+layout_mode = 2
+text = "legs"
+script = ExtResource("7_l5ukw")
+
 [node name="Control" type="Control" parent="UILayer" unique_id=470443545]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -68,19 +120,38 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="UILayer/Control" unique_id=620517239]
+[node name="battery" type="Control" parent="UILayer/Control" unique_id=1570381709]
+visible = false
 layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = -24.0
-offset_right = 39.0
-offset_bottom = -1.0
-grow_vertical = 0
-text = "text"
-horizontal_alignment = 1
-vertical_alignment = 1
-script = ExtResource("4_pcdfe")
+anchors_preset = 0
+offset_left = 136.0
+offset_top = 48.0
+offset_right = 176.0
+offset_bottom = 88.0
+offset_transform_enabled = true
+script = ExtResource("4_2pltu")
+
+[node name="battery_bg" type="ColorRect" parent="UILayer/Control/battery" unique_id=878490750]
+layout_mode = 0
+offset_left = -115.0
+offset_top = -28.0
+offset_right = -115.0
+offset_bottom = -28.0
+
+[node name="battery_fg" type="ColorRect" parent="UILayer/Control/battery" unique_id=418626471]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -20.0
+offset_bottom = -20.0
+grow_vertical = 2
+color = Color(0, 1, 0, 1)
+metadata/_edit_lock_ = true
+
+[node name="Label" type="Label" parent="UILayer/Control/battery" unique_id=1269084469]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
 
 [editable path="dummy_level"]
