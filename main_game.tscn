@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://q4lnqgv1wxiu"]
 
 [ext_resource type="PackedScene" uid="uid://dd2taqpvypu2r" path="res://level/components/dummy_level.tscn" id="1_88dp7"]
+[ext_resource type="Script" uid="uid://0egmk33a6x1d" path="res://StickyModifier.gd" id="2_02kkc"]
 [ext_resource type="Script" uid="uid://b2b54roqfxgym" path="res://tmp-debug/camera_2d.gd" id="2_upx2w"]
 [ext_resource type="PackedScene" uid="uid://dtrj1fb6xk68i" path="res://character/RobotCharacter.tscn" id="3_1tchb"]
 [ext_resource type="Script" uid="uid://cieymwbr6aavf" path="res://ui_battery.gd" id="4_2pltu"]
@@ -10,10 +11,18 @@
 [ext_resource type="Script" uid="uid://7j2bdtnptyn2" path="res://tmp-debug/legs_tracker.gd" id="7_l5ukw"]
 [ext_resource type="Script" uid="uid://d4kgixqqr7hb7" path="res://tmp-debug/nearby.gd" id="8_4srsv"]
 
+[sub_resource type="Resource" id="Resource_aomqu"]
+script = ExtResource("2_02kkc")
+metadata/_custom_type_script = "uid://0egmk33a6x1d"
+
 [sub_resource type="Curve" id="Curve_dugkq"]
 _limits = [0.0, 60.0, 0.0, 1.0]
 _data = [Vector2(0, 0), 0.0, 60.606056, 0, 1, Vector2(0.33, 20), 60.606056, 60.606056, 1, 1, Vector2(0.66, 40), 60.606056, 58.823536, 1, 1, Vector2(1, 60), 58.823536, 0.0, 1, 0]
 point_count = 4
+
+[sub_resource type="Resource" id="Resource_nhie5"]
+script = ExtResource("2_02kkc")
+metadata/_custom_type_script = "uid://0egmk33a6x1d"
 
 [sub_resource type="SegmentShape2D" id="SegmentShape2D_k0njw"]
 a = Vector2(0, -64)
@@ -25,21 +34,33 @@ a = Vector2(0, -64)
 
 [node name="dummy_level" parent="." unique_id=1403614458 instance=ExtResource("1_88dp7")]
 
-[node name="hand arm" parent="dummy_level" index="6" unique_id=501614596]
+[node name="button_hitbox" parent="dummy_level/hold_button" parent_id_path=PackedInt32Array(1403614458, 1308775342) index="0" unique_id=1401016788]
+collision_mask = 9
+
+[node name="hand arm" parent="dummy_level" index="6" unique_id=629634767]
 z_index = 2
+collision_mask = 10
+inertia = 5.0
+continuous_cd = 2
+contact_monitor = true
+modifier = SubResource("Resource_aomqu")
 hold_time_curve = SubResource("Curve_dugkq")
 
-[node name="CPUParticles2D" parent="dummy_level/hand arm" index="2" unique_id=1993449934]
-gravity = Vector2(0, 0)
+[node name="hand arm2" parent="dummy_level" index="7" unique_id=119457955]
+position = Vector2(101, 3)
+collision_mask = 10
+inertia = 5.0
+modifier = SubResource("Resource_nhie5")
 
 [node name="Camera2D" type="Camera2D" parent="dummy_level" unique_id=957198017 node_paths=PackedStringArray("target")]
-zoom = Vector2(2.195, 2.195)
+zoom = Vector2(1.43, 1.43)
 script = ExtResource("2_upx2w")
 target = NodePath("../character")
 smoothing = 0.004
 
 [node name="character" parent="dummy_level" unique_id=2085195806 node_paths=PackedStringArray("tile_layer", "splatter_layer") instance=ExtResource("3_1tchb")]
 position = Vector2(-120, 0)
+collision_mask = 2
 tile_layer = NodePath("../TileMapLayer")
 splatter_layer = NodePath("../SplatterLayer")
 

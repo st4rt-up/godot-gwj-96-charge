@@ -8,10 +8,13 @@ const SPEED = 150
 const JUMP_VELOCITY = 400.0 # negative is up
 
 # == placeholder
-@export var character_graphics: Node2D
+
 @export var tile_layer: TileMapLayer
 @export var splatter_layer: TileMapLayer
 var DEBUG : bool = true;
+
+# == graphics
+@onready var character_graphics: Node2D = $graphics
 
 # == hitboxes
 @onready var pickup_box: Area2D = $pickup_box
@@ -22,7 +25,7 @@ var charge: int = 100
 var charge_capacity: int = 100
 
 # attach mode: physics ticks per 1 charge sent to the held part
-const CHARGE_TICK_INTERVAL := 50
+const CHARGE_TICK_INTERVAL := 20
 var charge_ticks: int = 0
 
 # == parts
@@ -36,6 +39,8 @@ var nearby_parts: Array[Part] = []
 var held_space_ticks: int = 0
 
 func _ready():
+	pickup_box.connect("body_entered", _on_pickup_box_area_entered)
+	pickup_box.connect("body_exited", _on_pickup_box_area_exited)
 	EventBus.emit_signal("body_charge_changed", charge)
 
 func _physics_process(delta: float) -> void:
@@ -85,7 +90,6 @@ func fire_raycast_to_aim_dir(length: int) -> Dictionary:
 
 	var query = PhysicsRayQueryParameters2D.create(raycast_from, raycast_to)
 	return space_state.intersect_ray(query)
-
 
 # == movement code
 func handle_rolling_movement(delta: float) -> void:
@@ -160,11 +164,11 @@ func placeholder_graphics() -> void:
 	# graphics placeholder
 	if is_on_floor():
 		# PLACEHOLDER
-		character_graphics.sprite.rotation += velocity.x * 0.1 / (2 * 3.1415 * 10.0)
+		character_graphics.rotation += velocity.x * 0.1 / (2 * 3.1415 * 10.0)
 		#character_graphics.scale = Vector2.ONE
 		#character_graphics.skew = 0
 	else:
-		character_graphics.sprite.rotation += velocity.x * 0.01 / (2 * 3.1415 * 10.0)
+		character_graphics.rotation += velocity.x * 0.01 / (2 * 3.1415 * 10.0)
 
 	if is_on_wall():
 		var wall_right_side := int(sign(get_wall_normal().dot(Vector2.RIGHT)))
@@ -191,23 +195,20 @@ func handle_part_actions() -> void:
 	
 func get_part_in_slot(slot: Part.Slot) -> Part:
 	match slot:
-		Part.Slot.LEFT_ARM:
-			return left_arm
-		Part.Slot.RIGHT_ARM:
-			return right_arm
-		Part.Slot.LEGS:
-			return legs
+		Part.Slot.LEFT_ARM: return left_arm
+		Part.Slot.RIGHT_ARM: return right_arm
+		Part.Slot.LEGS: return legs
 	return null
 
-func get_part_slot(input_check: Callable = Input.is_action_just_pressed) -> int:
+func get_slot_from_input(input_check: Callable = Input.is_action_just_pressed) -> Part.Slot:
 	if input_check.call("action_1"): return Part.Slot.LEFT_ARM
 	if input_check.call("action_2"): return Part.Slot.RIGHT_ARM
 	if input_check.call("action_3"): return Part.Slot.LEGS
-	return -1
+	return Part.Slot.NONE
 
 func handle_attach() -> void:
-	var slot : int = get_part_slot()
-	if slot != -1:
+	var slot : int = get_slot_from_input()
+	if slot != Part.Slot.NONE:
 		var candidate_parts = scan_for_nearby_parts(slot)
 
 		var nearest_part : Part = candidate_parts[0] if !candidate_parts.is_empty() else null
@@ -217,14 +218,31 @@ func handle_attach() -> void:
 		return
 	
 	# detach waits for released
-	var released : int = get_part_slot(Input.is_action_just_released)
-	if released == -1: return
+	var released : Part.Slot = get_slot_from_input(Input.is_action_just_released)
+	if released == Part.Slot.NONE: return
 
 	var part : Part = get_part_in_slot(released)
 	if part == null or charge_ticks >= part.get_heavy_hold_ticks(): return
 
 	# placeholder, implement "detaching/di" mode
 	detach_part_if_possible(released)	# detach if tap
+	
+	
+	var random_fly_direction := (Vector2.UP * (125 * randf() + 50) 
+		+ Vector2.RIGHT * (100 * randf() - 50)
+		+ get_aim_direction() * 200
+		+ velocity)
+	
+	var random_rotational_force = randf() * 200 - 100
+	
+	var aiming_down_percent = max(0.0, get_aim_direction().dot(Vector2.DOWN))
+	if aiming_down_percent > 0.0:
+		print(1.0 - aiming_down_percent)
+		random_fly_direction *= 1.0 - aiming_down_percent
+		random_rotational_force *= max(0.0, 1.5 - aiming_down_percent)
+		
+	part.apply_torque_impulse(random_rotational_force)
+	part.apply_impulse(random_fly_direction)
 
 func attach_part_if_possible(part: Part, slot: Part.Slot) -> bool:
 	if part == null: return false	
@@ -236,10 +254,12 @@ func attach_part_if_possible(part: Part, slot: Part.Slot) -> bool:
 		Part.Slot.LEFT_ARM: left_arm = part
 		Part.Slot.RIGHT_ARM: right_arm = part
 		Part.Slot.LEGS: legs = part
-			
-	part.attach_to_character(self)
+		Part.Slot.NONE: return false
+	
+	part.attach_to_character(self, slot)
+	
 	if part.charge == 0:
-		send_charge_if_possible(part.pickup_charge, part)
+		send_charge_if_possible(part.pickup_charge_cost, part)
 	nearby_parts.erase(part)
 	EventBus.emit_signal("nearby_parts_updated", nearby_parts)
 	EventBus.emit_signal("body_attached_part", part, slot)
@@ -257,7 +277,6 @@ func detach_part_if_possible(slot: Part.Slot) -> bool:
 		Part.Slot.LEGS: legs = null
 	
 	# drop the part at the current position
-	part.global_position = global_position
 	part.detach_from_character()
 	
 	nearby_parts.append(part)
@@ -289,10 +308,10 @@ func scan_for_nearby_parts(slot: Part.Slot) -> Array[Part]:
 func handle_charge_part() -> void:
 	# a fresh press starts a new hold; the count is left alone on release
 	# so handle_attach can still read how long the button was down
-	if get_part_slot() != -1: charge_ticks = 0
+	if get_slot_from_input() != Part.Slot.NONE: charge_ticks = 0
 
-	var slot : int = get_part_slot(Input.is_action_pressed)
-	var part : Part = get_part_in_slot(slot) if slot != -1 else null
+	var slot : int = get_slot_from_input(Input.is_action_pressed)
+	var part : Part = get_part_in_slot(slot) if slot != Part.Slot.NONE else null
 	if part == null: return
 
 	charge_ticks += 1
@@ -364,9 +383,12 @@ func draw_debug_input_display() -> void:
 		draw_rect(Rect2(-35.0, 0.0, 5.0, max(-10, -(held_space_ticks/4.0))), colorHeld1)
 
 # == signals
-func _on_pickup_box_area_entered(area: Area2D) -> void:
-	var part := area.get_parent() as Part
-	if part == null: return
+func _on_pickup_box_area_entered(body) -> void:
+	# var part := area.get_parent() as Part
+	if !(body is Part): return
+	var part = body as Part
+	if body == null: return
+	
 	if nearby_parts.has(part): return
 	if left_arm == part && left_arm != null: return
 	if right_arm == part && right_arm != null: return
@@ -376,8 +398,10 @@ func _on_pickup_box_area_entered(area: Area2D) -> void:
 	EventBus.emit_signal("nearby_parts_updated", nearby_parts)
 	if DEBUG: print("part in range: %s" % part.name)
 
-func _on_pickup_box_area_exited(area: Area2D) -> void:
-	var part := area.get_parent() as Part
+func _on_pickup_box_area_exited(body) -> void:
+	# var part := area.get_parent() as Part
+	if !(body is Part): return
+	var part = body as Part
 	if part == null: return
 
 	nearby_parts.erase(part)

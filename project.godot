@@ -82,8 +82,10 @@ attach={
 
 [layer_names]
 
-2d_physics/layer_1="physics"
-2d_physics/layer_2="splatter"
+2d_physics/layer_1="character"
+2d_physics/layer_2="tiles"
+2d_physics/layer_3="splatter"
+2d_physics/layer_4="parts"
 
 [physics]
 

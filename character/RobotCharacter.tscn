@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dtrj1fb6xk68i"]
 
-[ext_resource type="Script" uid="uid://cb0tdol00p5ru" path="res://character/character.gd" id="1_x71v3"]
+[ext_resource type="Script" uid="uid://dwovqytfknlvn" path="res://character/character.gd" id="1_x71v3"]
 [ext_resource type="Texture2D" uid="uid://3fs2w4r8hqv4" path="res://assets/icon.svg" id="2_28ew8"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_k0njw"]
@@ -18,13 +18,9 @@ script/source = "extends Node2D
 @export var sprite: Sprite2D
 "
 
-[node name="character" type="CharacterBody2D" unique_id=2085195806 node_paths=PackedStringArray("splatter_aim_cone", "splatter_detector", "character_graphics", "pickup_box")]
+[node name="character" type="CharacterBody2D" unique_id=2085195806]
 floor_stop_on_slope = false
 script = ExtResource("1_x71v3")
-splatter_aim_cone = NodePath("apply_splatter_hitbox")
-splatter_detector = NodePath("splatter_collision_box")
-character_graphics = NodePath("graphics")
-pickup_box = NodePath("pickup_box")
 
 [node name="collision_box" type="CollisionShape2D" parent="." unique_id=694453772]
 shape = SubResource("CircleShape2D_k0njw")
@@ -55,10 +51,21 @@ script = SubResource("GDScript_vy0ww")
 sprite = NodePath("Sprite2D")
 
 [node name="Sprite2D" type="Sprite2D" parent="graphics" unique_id=885619222]
+visible = false
 position = Vector2(-3.33786e-06, -7.1525574e-07)
 scale = Vector2(0.25000003, 0.24999999)
 texture = ExtResource("2_28ew8")
 metadata/_edit_lock_ = true
+
+[node name="Skeleton2D" type="Skeleton2D" parent="graphics" unique_id=1022679363]
+
+[node name="Polygon2D" type="Polygon2D" parent="graphics" unique_id=1349190633]
+color = Color(1, 0.8235294, 0.20392157, 1)
+skeleton = NodePath("../Skeleton2D")
+polygon = PackedVector2Array(0, -16, 5, -15, 9, -13, 12, -10, 15, -5, 16, 0, 15, 5, 13, 9, 9, 13, 4, 15, 0, 16, -4, 15, -9, 13, -13, 9, -15, 5, -16, 0, -15, -5, -13, -9, -9, -13, -5, -15)
+uv = PackedVector2Array(0, -16, 5, -15, 9, -13, 12, -10, 15, -5, 16, 0, 15, 5, 13, 9, 9, 13, 4, 15, 0, 16, -4, 15, -9, 13, -13, 9, -15, 5, -16, 0, -15, -5, -13, -9, -9, -13, -5, -15)
+vertex_colors = PackedColorArray(1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 1, 0.8235294, 0.20392157, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.8235294, 0.20392157, 1)
+polygons = [PackedInt32Array(16, 15, 17), PackedInt32Array(18, 17, 15), PackedInt32Array(15, 14, 18), PackedInt32Array(18, 19, 14), PackedInt32Array(13, 14, 19), PackedInt32Array(0, 19, 13), PackedInt32Array(13, 12, 0), PackedInt32Array(0, 1, 12), PackedInt32Array(1, 12, 11), PackedInt32Array(1, 2, 11), PackedInt32Array(11, 10, 2), PackedInt32Array(2, 3, 10), PackedInt32Array(10, 9, 3), PackedInt32Array(3, 4, 9), PackedInt32Array(9, 8, 4), PackedInt32Array(4, 5, 8), PackedInt32Array(8, 7, 5), PackedInt32Array(7, 6, 5)]
 
 [node name="apply_splatter_hitbox" type="Area2D" parent="." unique_id=447672277]
 visible = false
@@ -69,6 +76,3 @@ metadata/_edit_lock_ = true
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="apply_splatter_hitbox" unique_id=1143900197]
 polygon = PackedVector2Array(125, 50, 150, 0, 125, -50, 0, 0)
-
-[connection signal="area_entered" from="pickup_box" to="." method="_on_pickup_box_area_entered"]
-[connection signal="area_exited" from="pickup_box" to="." method="_on_pickup_box_area_exited"]
